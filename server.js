@@ -70,6 +70,20 @@ function dispatchAuto(req, res) {
 // ---------- health check (used by Render) ----------
 app.get("/healthz", (req, res) => res.type("text/plain").send("ok"));
 
+// ---------- scheduler (replaces the old kmpanel.onrender.com service) ----------
+// Routes: /schedule-order /orders /history /delivered-log /activity-log /tick  (see lib/scheduler/).
+// If it cannot start, the rest of the website keeps working.
+process.env.KM_LOCAL_SCHEDULER = "1"; // tells the Auto-Key order flow to use this built-in scheduler
+try {
+  const scheduler = require("./lib/scheduler/routes");
+  scheduler.mount(app);
+  scheduler.startTicker();
+  console.log("[server] Built-in scheduler is running.");
+} catch (error) {
+  process.env.KM_LOCAL_SCHEDULER = "0";
+  console.error("[server] WARNING: scheduler could not start:", error);
+}
+
 // ---------- API ----------
 // Same rewrites as vercel.json.
 app.all("/api/admin/auth", (req, res) => {
@@ -117,6 +131,7 @@ app.use((req, res, next) => {
   const blocked = [
     /^\/lib(?:\/|$)/,
     /^\/supabase(?:\/|$)/,
+    /^\/test(?:\/|$)/,
     /^\/node_modules(?:\/|$)/,
     /^\/api(?:\/|$)/,
     /(?:^|\/)\.[^/]/, // any dotfile or dot-folder: .env, .git, .gitignore ...

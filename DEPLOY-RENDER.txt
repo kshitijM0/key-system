@@ -40,7 +40,7 @@ Step 3. Environment variables (Render > Environment). Sirf NAAM yahan likhe hain
         Agar use karte ho to:
           UPI_ID, UPI_NAME           (wallet deposit)
           LINKVERTISE_ANTI_BYPASS_TOKEN   (free key claim)
-          RENDER_PROXY_URL           (khali chhodo to default https://kmpanel.onrender.com use hota hai)
+          (RENDER_PROXY_URL ko set MAT karo / delete kar do: tab naya built-in scheduler use hota hai)
         Missing variable ho to Render ke logs me "WARNING: these environment variables are not set"
         dikhega (sirf naam, value nahi).
 
@@ -65,7 +65,7 @@ Step 4. Deploy hone ke baad NAYE URL par ye sab check karo:
         [ ] /script.js -> JavaScript dikhe
         [ ] /auto-admin khule aur admin login chale
         [ ] Key daal kar key catalog / order test
-        [ ] Scheduler (kmpanel.onrender.com) se order flow chale
+        [ ] Manual order lagao -> Schedules tab me order dikhe, /tick kholne par {"claimed":...} aaye
 
 Step 5. Sab theek ho to: fix-deploy ko main me merge karo, ya purane Render service ka branch
         change karke fix-deploy/main set karo. Tabhi purana URL (thekm.onrender.com) naye code par aayega.
@@ -79,6 +79,43 @@ NOTE
 
 PROXY (KM Panel)
 ----------------
-script.js me ab: panel API calls -> https://kmpanel-proxy.vercel.app/proxy (naya proxy)
-                 scheduler (orders/history/logs) -> https://kmpanel.onrender.com (purana, same)
-Agar naya proxy kabhi badlo to script.js ki line 4-5 me sirf URL badlo.
+script.js me: panel API calls -> https://kmpanel-proxy.vercel.app/proxy (naya proxy)
+Agar naya proxy kabhi badlo to script.js ki line 5 me sirf URL badlo.
+
+NAYA SCHEDULER (purane kmpanel.onrender.com ki jagah) - ab server ke andar hi hai
+---------------------------------------------------------------------------------
+Orders Supabase me save hote hain, isliye server restart ya so jaane par bhi order nahi khote.
+Server jaagta hai to har 20 second me due parts (legs) panel ko bhej deta hai.
+
+Step A. Supabase -> SQL Editor -> New query -> supabase/scheduler-schema.sql ka text paste -> Run.
+        (Sirf 2 NAYE tables banata hai: sched_orders, sched_legs. Purane tables ko haath nahi lagata.)
+
+Step B. Render > Environment:
+          RENDER_PROXY_URL  ->  KHALI rakho / delete karo (set hoga to purana dead scheduler use hoga)
+          Optional: SCHEDULER_ALLOWED_ORIGINS = https://kshitijm0.github.io,https://aapki-doosri-site.com
+                    (GitHub Pages aur thekm.onrender.com pehle se allowed hain)
+          Optional: SCHEDULER_TICK_SECRET = koi lamba random secret
+
+Step C. Server ko sone se bachao (Render free service 15 min idle ke baad so jati hai):
+        uptimerobot.com par free account -> New monitor -> HTTP(s) -> URL:
+            https://<aapki-render-site>/tick          (secret set kiya ho to /tick?secret=AAPKA_SECRET)
+        Interval: 5 minutes.
+        Isse server jaagta rehta hai aur har 5 min me due parts bhi bhej diye jaate hain.
+
+Step D. Test: bahut chhota manual order lagao (panel connect karke). Phir:
+        - Schedules tab me order dikhna chahiye
+        - /tick kholo: {"claimed":1,"done":1,...} aana chahiye jab part due ho
+        - Panel ke dashboard me order aaya ya nahi dekho
+
+GitHub Pages par: script.js (line 8) Render/localhost par apne aap same server use karta hai,
+GitHub Pages par https://thekm.onrender.com use karta hai. Aapka Render URL alag ho to wo URL line 8 me badlo.
+
+JAANE-ANJAANE BAATEIN
+---------------------
+- Panel ko standard SMM format me order jata hai: key, action=add, service, link, quantity (comments ho to comments).
+  Aapka purana scheduler kuch alag bhejta tha to pehle chhota test zaroor karo.
+- Temporary error (rate limit / panel unreachable) par 2 min aur 5 min baad dobara try (total 3 baar).
+- Timeout ya samajh na aane wale jawab par dobara try NAHI hota (warna double order lag sakta hai).
+  Aise parts Schedules tab me "Failed: n" me dikhte hain; panel me check karo.
+- Auto key orders bhi isi scheduler se jaate hain. Scheduler start na ho paye to key ka paisa wapas ho jata hai (pehle jaisa).
+- Tests chalane ke liye (computer par): npm install && npm test

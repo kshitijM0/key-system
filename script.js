@@ -3,8 +3,9 @@
 // ==========================================
 // Panel API calls (connect panel, services, balance, orders) go through the NEW Vercel proxy.
 const PROXY_URL = "https://kmpanel-proxy.vercel.app/proxy";
-// Scheduler endpoints (/schedule-order, /orders, /history, /delivered-log, /activity-log) stay on the existing scheduler service.
-const PROXY_ORIGIN = "https://kmpanel.onrender.com";
+// Scheduler endpoints (/schedule-order, /orders, /history, /delivered-log, /activity-log) are now built into the Node server.
+// On Render / localhost the site talks to itself; on GitHub Pages it talks to the Render site (edit the URL if yours differs).
+const PROXY_ORIGIN = /(^localhost$|\.onrender\.com$)/.test(location.hostname) ? location.origin : "https://thekm.onrender.com";
 
 // ==========================================
 // CATEGORY COLORS (used everywhere a category shows on a graph)
@@ -2088,7 +2089,7 @@ function renderOrders(orders) {
               <span class="order-status-badge ${order.status}">${capitalize(order.status)}</span>
             </div>
             <div class="order-stats-line">${statsParts.join(" · ")}</div>
-            <div class="order-progress-line">Done: ${order.doneLegs}/${order.totalLegs} legs · Next: ${nextText}</div>
+            <div class="order-progress-line">Done: ${order.doneLegs}/${order.totalLegs} legs${order.failedLegs ? ` · Failed: ${order.failedLegs}` : ""} · Next: ${nextText}</div>
             <a class="order-link" href="${order.link}" target="_blank" rel="noopener">${order.link}</a>
             <div class="order-progress-bar"><div class="order-progress-fill" style="width:${pct}%"></div></div>
           </div>
