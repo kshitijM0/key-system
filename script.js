@@ -1,8 +1,10 @@
 // ==========================================
 // HARDCODED PROXY — no user-facing field needed
 // ==========================================
+// Panel API calls (connect panel, services, balance, orders) go through the NEW Vercel proxy.
 const PROXY_URL = "https://kmpanel-proxy.vercel.app/proxy";
-const PROXY_ORIGIN = PROXY_URL.replace(/\/proxy$/, "");
+// Scheduler endpoints (/schedule-order, /orders, /history, /delivered-log, /activity-log) stay on the existing scheduler service.
+const PROXY_ORIGIN = "https://kmpanel.onrender.com";
 
 // ==========================================
 // CATEGORY COLORS (used everywhere a category shows on a graph)
