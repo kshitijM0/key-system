@@ -78,7 +78,8 @@ try {
   const scheduler = require("./lib/scheduler/routes");
   scheduler.mount(app);
   scheduler.startTicker();
-  console.log("[server] Built-in scheduler is running.");
+  require("./lib/panelProxy").mount(app, scheduler.cors); // POST /proxy (panel API calls from the website)
+  console.log("[server] Built-in scheduler and panel proxy are running.");
 } catch (error) {
   process.env.KM_LOCAL_SCHEDULER = "0";
   console.error("[server] WARNING: scheduler could not start:", error);

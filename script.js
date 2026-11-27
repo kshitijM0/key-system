@@ -1,11 +1,12 @@
 // ==========================================
 // HARDCODED PROXY — no user-facing field needed
 // ==========================================
-// Panel API calls (connect panel, services, balance, orders) go through the NEW Vercel proxy.
-const PROXY_URL = "https://kmpanel-proxy.vercel.app/proxy";
-// Scheduler endpoints (/schedule-order, /orders, /history, /delivered-log, /activity-log) are now built into the Node server.
-// On Render / localhost the site talks to itself; on GitHub Pages it talks to the Render site (edit the URL if yours differs).
-const PROXY_ORIGIN = /(^localhost$|\.onrender\.com$)/.test(location.hostname) ? location.origin : "https://thekm.onrender.com";
+// ENGINE_URL = the Node server that runs the proxy + scheduler. On Render/localhost the site uses itself;
+// on Vercel / GitHub Pages it uses the Render service (edit the URL below if your Render address is different).
+const ENGINE_URL = /(^localhost$|\.onrender\.com$)/.test(location.hostname) ? location.origin : "https://thekm.onrender.com";
+const PROXY_URL = ENGINE_URL + "/proxy";
+// Scheduler endpoints (/schedule-order, /orders, /history, /delivered-log, /activity-log) live on the same server.
+const PROXY_ORIGIN = ENGINE_URL;
 
 // ==========================================
 // CATEGORY COLORS (used everywhere a category shows on a graph)

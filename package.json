@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node build.js",
     "start": "node server.js",
-    "test": "node --test test/scheduler.test.js"
+    "test": "node --test test/*.test.js"
   },
   "engines": {
     "node": ">=18"

@@ -77,10 +77,23 @@ NOTE
   chalane par Render khud bana lega. Chaho to apne computer par `npm install` chala kar
   package-lock.json commit kar do.
 
-PROXY (KM Panel)
-----------------
-script.js me: panel API calls -> https://kmpanel-proxy.vercel.app/proxy (naya proxy)
-Agar naya proxy kabhi badlo to script.js ki line 5 me sirf URL badlo.
+SETUP: WEBSITE ALAG, ENGINE RENDER PAR
+-------------------------------------
+Website (frontend)  -> Vercel ya GitHub Pages (jahan chahe)
+Engine (Render)     -> server.js: panel PROXY (/proxy) + SCHEDULER (/schedule-order, /orders ...) + Auto-Key API
+Naya Vercel proxy (kmpanel-proxy.vercel.app) ab zaroori nahi; chaho to band kar do.
+
+Website kis engine se baat kare: script.js ki line 6 (ENGINE_URL).
+  - Render / localhost par site apne aap khud ko use karti hai.
+  - Vercel / GitHub Pages par https://thekm.onrender.com use hota hai. Aapka Render URL alag ho to wo URL line 6 me badlo.
+
+Agar website Vercel par hai, to Vercel > Settings > Environment Variables me ye bhi daalo
+(taaki Auto orders Render ke scheduler tak pahunche):
+    RENDER_PROXY_URL         = https://<aapki-render-site>      (end me / nahi)
+    SCHEDULER_SHARED_SECRET  = koi lamba random secret  (Render par bhi SAME daalo)
+Render par bhi: SCHEDULER_SHARED_SECRET = wahi secret.
+(Vercel ka domain kmpremium.vercel.app pehle se allowed hai. Alag domain ho to Render par
+ SCHEDULER_ALLOWED_ORIGINS = https://aapka-domain.vercel.app daalo.)
 
 NAYA SCHEDULER (purane kmpanel.onrender.com ki jagah) - ab server ke andar hi hai
 ---------------------------------------------------------------------------------
@@ -91,7 +104,7 @@ Step A. Supabase -> SQL Editor -> New query -> supabase/scheduler-schema.sql ka 
         (Sirf 2 NAYE tables banata hai: sched_orders, sched_legs. Purane tables ko haath nahi lagata.)
 
 Step B. Render > Environment:
-          RENDER_PROXY_URL  ->  KHALI rakho / delete karo (set hoga to purana dead scheduler use hoga)
+          RENDER_PROXY_URL  ->  Render par KHALI rakho / delete karo (set hoga to Auto orders purane URL par jayenge)
           Optional: SCHEDULER_ALLOWED_ORIGINS = https://kshitijm0.github.io,https://aapki-doosri-site.com
                     (GitHub Pages aur thekm.onrender.com pehle se allowed hain)
           Optional: SCHEDULER_TICK_SECRET = koi lamba random secret
@@ -107,8 +120,7 @@ Step D. Test: bahut chhota manual order lagao (panel connect karke). Phir:
         - /tick kholo: {"claimed":1,"done":1,...} aana chahiye jab part due ho
         - Panel ke dashboard me order aaya ya nahi dekho
 
-GitHub Pages par: script.js (line 8) Render/localhost par apne aap same server use karta hai,
-GitHub Pages par https://thekm.onrender.com use karta hai. Aapka Render URL alag ho to wo URL line 8 me badlo.
+GitHub Pages par: script.js (line 6, ENGINE_URL) me aapki Render site ka URL hona chahiye.
 
 JAANE-ANJAANE BAATEIN
 ---------------------
