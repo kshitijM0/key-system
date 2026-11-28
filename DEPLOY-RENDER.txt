@@ -1,6 +1,21 @@
 THE KM - RENDER PAR DEPLOY KAISE KAREIN (Hinglish, step by step)
 =================================================================
 
+VIEWS RUK GAYE, PHIR EK SAATH AA GAYE? (server so jata hai)
+-------------------------------------------------------------
+Render free service 15 minute koi visit na aaye to SO JATI HAI. Sote waqt scheduler kuch nahi bhej sakta,
+isliye orders ke hisse (legs) ghanton tak ruk jaate hain. Jaise hi koi site kholta hai, server jaag jata hai.
+
+1. ASLI ILAAJ (zaroori): UptimeRobot (free) lagao jo har 5 minute me aapki site ka /tick kholta rahe:
+       https://<aapki-render-site>/tick      (jaise https://key-system-4vv8.onrender.com/tick)
+   Ise lagane ke baad server sota hi nahi. Bina iske schedule bharosemand nahi chalega.
+2. Safety (is ZIP me): agar server kabhi so bhi jaye, to jaagne ke baad jo hisse late ho gaye wo ab
+   ek saath nahi jate. Har order ka sirf 1 late hissa lagbhag har 40 second me jata hai; samay par wale
+   hisse waise hi time par jaate hain. Isse views dheere-dheere aate hain, 3000 ek saath nahi.
+   (Speed badalni ho to Render env: SCHEDULER_LATE_SPACING_SECONDS = 40 ki jagah koi aur sankhya.)
+3. Server so gaya tha ya nahi: Render > apni service > Logs me "Service spinning down" ya
+   "Your service is live" (jaagne par) wali lines dekho.
+
 KYA FIX HUA
 -----------
 1. index.html se gate.css aur gate.js ke tags hata diye (ye files repo me thi hi nahi).

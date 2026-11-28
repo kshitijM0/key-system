@@ -12,10 +12,13 @@ function createMemoryStore() {
       orders.set(order.id, { created_at: new Date().toISOString(), ...clone(order) });
       legRows.forEach((l) => legs.set(l.id, { claimed_at: null, done_at: null, provider_order_id: null, last_error: null, ...clone(l) }));
     },
-    async claimDue(limit, nowIso) {
-      const due = [...legs.values()].filter((l) => l.status === "pending" && l.fire_at <= nowIso).sort((a, b) => (a.fire_at < b.fire_at ? -1 : 1)).slice(0, limit);
-      due.forEach((l) => { l.status = "processing"; l.claimed_at = nowIso; });
-      return clone(due);
+    async peekDue({ after, upTo, limit }) {
+      return clone([...legs.values()].filter((l) => l.status === "pending" && l.fire_at <= upTo && (!after || l.fire_at > after)).sort((a, b) => (a.fire_at < b.fire_at ? -1 : 1)).slice(0, limit));
+    },
+    async claimLegs(ids, nowIso) {
+      const rows = ids.map((id) => legs.get(id)).filter((l) => l && l.status === "pending");
+      rows.forEach((l) => { l.status = "processing"; l.claimed_at = nowIso; });
+      return clone(rows);
     },
     async failStuck(cutoffIso, message) {
       const stuck = [...legs.values()].filter((l) => l.status === "processing" && l.claimed_at < cutoffIso);
